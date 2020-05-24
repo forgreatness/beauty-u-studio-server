@@ -23,4 +23,4 @@ jobs:
     - name: Azure WebApp
       uses: Azure/webapps-deploy@v2
       with:
-        app-name: ${nodeJSApp}
+        app-name: ${{ nodeJSApp }}
