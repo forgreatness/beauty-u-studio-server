@@ -16,3 +16,8 @@ jobs:
       with:
         creds: ${{ secrets.azure_creds }}
         enable-AzPSSession: true
+
+    - name: Azure WebApp
+      uses: Azure/webapps-deploy@v2
+      with:
+        app-name: jswebmjl
