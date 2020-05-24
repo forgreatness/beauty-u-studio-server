@@ -1,0 +1,23 @@
+{
+  "name": "js-express-api",
+  "version": "1.0.0",
+  "description": "Express API",
+  "main": "app.js",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AdminTurnedDevOps/JS-Express-API.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AdminTurnedDevOps/JS-Express-API/issues"
+  },
+  "homepage": "https://github.com/AdminTurnedDevOps/JS-Express-API#readme"
+}
