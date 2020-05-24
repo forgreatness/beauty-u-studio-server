@@ -6,7 +6,8 @@ app.get('', (req, res) => {
     var today = new Date()
 
     var time = today.getTime
-    res.send(time)
+    var day = today.getDay
+    res.send(day + time)
     
 })
 
