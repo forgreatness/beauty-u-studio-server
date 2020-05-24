@@ -3,9 +3,9 @@ const app = express()
 const port = process.env.PORT || 80
 
 app.get('', (req, res) => {
-    var today = new Date()
+    var today = new Date().getDay
 
-    res.send(<h1>"CloudDev Home Page</h1>)
+    res.send(today)
     
 })
 
