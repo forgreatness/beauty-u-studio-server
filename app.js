@@ -3,7 +3,7 @@ const app = express()
 const port = process.env.PORT || 80
 
 app.get('', (req, res) => {
-    var today = new Date().getDate
+    var today = new Date()
 
     res.send(today)
     
