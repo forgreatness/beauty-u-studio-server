@@ -3,7 +3,7 @@ name: 'Deploy a JS Express API to App Services'
 on:
   push:
     branches: [ master ]
-
+    
 env:
   nodeJSApp: jswebmjl
 
