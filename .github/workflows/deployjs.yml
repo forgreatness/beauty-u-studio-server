@@ -1,4 +1,4 @@
-name: Deploy a JS Express API to App Services
+name: 'Deploy a JS Express API to App Services'
 
 on:
   push:
