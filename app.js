@@ -5,7 +5,7 @@ const port = process.env.PORT || 80
 app.get('', (req, res) => {
     var today = new Date()
 
-    time = today.getTime
+    var time = today.getTime
     res.send(time)
     
 })
