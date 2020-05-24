@@ -5,7 +5,7 @@ on:
     branches: [ master ]
 
 jobs:
-  'JS to App Service Deployment':
+  JS_Deploy:
     runs-on: ubuntu-latest
 
     steps:
