@@ -1,0 +1,12 @@
+{  
+    "appPort": 80,
+    
+    "extensions": [
+      "mauve.terraform",
+      "ms-vscode.PowerShell"
+    ],
+    
+    "settings": {
+      "peacock.remoteColor": "#0078D7"
+    },
+}
