@@ -2,8 +2,9 @@
     "appPort": 80,
     
     "extensions": [
-      "mauve.terraform",
-      "ms-vscode.PowerShell"
+      "msjsdiag.debugger-for-chrome",
+      "ms-vscode.PowerShell",
+      "dbaeumer.vscode-eslint"
     ],
     
     "settings": {
