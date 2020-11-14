@@ -22,5 +22,6 @@
     "url": "git+https://github.com/forgreatness/beauty-u-studio-server.git"
   },
   "author": "Danh Nguyen",
-  "license": "ISC"
+  "license": "ISC",
+  "homepage": "https://beauty-u-studio-server.azurewebsites.net"
 }

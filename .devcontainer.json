@@ -10,4 +10,9 @@
     "settings": {
       "peacock.remoteColor": "#b62020"
     },
+    "containerEnv": {
+      "MONGO_USER": "beauty-u-studio-server",
+      "MONGO_PASSWORD": "danh123",
+      "MONGO_DB_NAME": "BeautyUStudioDB"
+    }
 }
