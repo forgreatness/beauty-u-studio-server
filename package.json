@@ -1,7 +1,7 @@
 {
-  "name": "js-express-api",
+  "name": "beauty-u-studio-server",
   "version": "1.0.0",
-  "description": "Express API",
+  "description": "A backend service used as an interface to get data for BeautyUStudio applications",
   "main": "app.js",
   "dependencies": {
     "express": "^4.17.1"
@@ -13,12 +13,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AdminTurnedDevOps/JS-Express-API.git"
+    "url": "git+https://github.com/forgreatness/beauty-u-studio-server.git"
   },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/AdminTurnedDevOps/JS-Express-API/issues"
-  },
-  "homepage": "https://github.com/AdminTurnedDevOps/JS-Express-API#readme"
+  "author": "Danh Nguyen",
+  "license": "ISC"
 }
