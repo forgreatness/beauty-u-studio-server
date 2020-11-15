@@ -16,6 +16,7 @@ connectToDB(() => {
     });
 
     const server = new ApolloServer({
+        playground: process.env.NODE_ENV !== "production",
         typeDefs,
         resolvers,
         dataSources
