@@ -16,19 +16,19 @@ connectToDB(() => {
     });
 
     const server = new ApolloServer({
-        playground: true,
-        introspection: true,
         typeDefs,
         resolvers,
         dataSources
     });
 
     const app = express();
-    const port = process.env.PORT || 80;
+    const port = process.env.PORT || 8080;
 
     app.use(morgan('dev'));
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
+
+    server.applyMiddleware({ app });
 
     app.use('', (req, res) => {
         res.send("Welcome to the data interface for BeautyUStudio");
