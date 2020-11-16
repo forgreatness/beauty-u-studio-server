@@ -30,8 +30,6 @@ connectToDB(() => {
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
 
-    server.applyMiddleware({ app });
-
     app.use('', (req, res) => {
         res.send("Welcome to the data interface for BeautyUStudio");
     });
