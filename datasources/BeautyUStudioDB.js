@@ -127,10 +127,58 @@ module.exports = class BeautyUStudioDB extends DataSource {
             });
     }
 
+    async getUser(userId) {
+        try {
+            const user = await this.store.collection('users').findOne({ _id: ObjectID.createFromHexString(userId) });
+
+            let downloadedPhoto = null;
+
+            if (user.photo) {
+                downloadedPhoto = await this.downloadUserPhoto(user.photo);
+            }
+
+            if (!user) {
+                throw 'Error getting user, nothing was returned';
+            }
+
+            return this.userReducer(user, downloadedPhoto);
+        } catch(err) {
+            return new Error(err);
+        }
+    }
+
+    async getUsers(role) {
+        var users = [];
+
+        try {
+            if (role.toLowerCase() == 'all') {
+                users = await this.store.collection('users').find({}).toArray();
+            } else {
+                users = await this.store.collection('users').find({ role: role }).toArray();
+            }
+
+            if (!users) {
+                throw 'Error getting users, nothing was returned';
+            }
+
+            users.forEach((user, index) => {
+                let downloadedPhoto = null;
+
+                if (user.photo) {
+                    downloadedPhoto = this.downloadUserPhoto(user.photo);
+                }
+
+                users[index] = this.userReducer(user, downloadedPhoto);
+            });
+
+            return users;
+        } catch(err) {
+            return new Error(err);
+        }
+    }
+
     async addUser(userInput) {
         const user = JSON.parse(JSON.stringify(userInput));
-
-        const bucket = new GridFSBucket(this.store);
 
         if (user.role.toLowerCase() == 'stylist') {
             if (!user.photo || !user.about) {
@@ -138,44 +186,47 @@ module.exports = class BeautyUStudioDB extends DataSource {
             }
         }
 
-        var userPhoto = null;
+        try {
+            let userPhoto = null;
 
-        if (user.photo) {
-            user.photo = ObjectID.createFromHexString(user.photo);
-            const fileReadStream = bucket.openDownloadStream(user.photo);
+            if (user.photo) {
+                user.photo = ObjectID.createFromHexString(user.photo);
 
-            var chunks = [];
+                userPhoto = await this.downloadUserPhoto(user.photo);
+            }
 
-            return new Promise
-                ((resolve, reject) => {
-                    fileReadStream
-                        .on('data', (chunk) => {
-                            chunks.push(chunk);
-                        })
-                        .on('end', () => {
-                            var buff = Buffer.concat(chunks);
+            const result = await this.store.collection('users').insertOne(user);
 
-                            resolve(buff.toString('base64'));
-                        })
-                        .on('error', err => {
-                            reject(err);
-                        });
-                })
-                .then(downloadedPhoto => {
-                    userPhoto = downloadedPhoto;
+            if (!result) {
+                throw 'unable to create new user successfully';
+            }
 
-                    return this.store.collection('users').insertOne(user);
-                })
-                .then(result => {
-                    if (!result) {
-                        throw 'unable to create new user successfully';
-                    }
-
-                    return this.userReducer(result.ops[0], userPhoto);
-                })
-                .catch(err => {
-                    return new Error(err);
-                });
+            return this.userReducer(result.ops[0], userPhoto);
+        } catch(err) {
+            return new Error(err);
         }
+    }
+
+    downloadUserPhoto(photoId) {
+        const bucket = new GridFSBucket(this.store);
+
+        const fileReadStream = bucket.openDownloadStream(photoId);
+
+        let chunks = [];
+
+        return new Promise((resolve, reject) => {
+            fileReadStream
+                .on('data', (chunk) => {
+                    chunks.push(chunk);
+                })
+                .on('end', () => {
+                    let buff = Buffer.concat(chunks);
+
+                    resolve(buff.toString('base64'));
+                })
+                .on('error', (err) => {
+                    reject(err);
+                });
+        });
     }
 }

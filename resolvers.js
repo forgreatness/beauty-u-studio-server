@@ -1,6 +1,8 @@
 module.exports = {
     Query: {
-        services: (_, __, { dataSources }) => dataSources.beautyUStudioDB.getServices()
+        services: (_, __, { dataSources }) => dataSources.beautyUStudioDB.getServices(),
+        users: (_, { role }, { dataSources }) => dataSources.beautyUStudioDB.getUsers(role),
+        user: (_, { userId }, { dataSources }) => dataSources.beautyUStudioDB.getUser(userId)
     },
     Mutation: {
         addService: (_, { serviceInput }, { dataSources }) => dataSources.beautyUStudioDB.addService({ serviceInput }),
