@@ -27,6 +27,14 @@ const typeDefs = gql`
         about: String
     }
 
+    type Appointment {
+        id: ID!
+        stylist: User!
+        client: User!
+        services: [Service!]!
+        time: String!
+    }
+
     input ServiceInput {
         type: String!
         name: String!
@@ -46,16 +54,23 @@ const typeDefs = gql`
         about: String
     }
 
+    input AppointmentInput {
+        stylist: ID
+        client: ID
+    }
+
     type Kind {
         type: String!,
         kind: Kind
     }
 
     type Query {
-        uploads: [File]
-        services: [Service]
+        uploads: [File!]
+        services: [Service!]
+        service(serviceId: ID!): Service!
         user(userId: ID!): User!
-        users(role: String = "client"): [User]
+        users(role: String = "client"): [User!]
+        appointments(filter: AppointmentInput): [Appointment!]
     }
 
     type Mutation {

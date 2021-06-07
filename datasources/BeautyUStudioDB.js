@@ -58,6 +58,29 @@ module.exports = class BeautyUStudioDB extends DataSource {
         return user;
     }
 
+    appointmentReducer(appointment) {
+        appointment = {
+            ...appointment,
+            id: appointment._id
+        };
+
+        return appointment;
+    }
+
+    async getService(serviceId) {
+        try {
+            if (serviceId == null) {
+                throw 'serviceId input is missing from parameter';
+            }
+
+            const service = await this.store.collection('services').findOne({ _id: ObjectID.createFromHexString(serviceId) });
+
+            return this.serviceReducer(service);
+        } catch (err) {
+            return new Error(err);
+        }
+    }
+
     async getServices() {
         const services = await this.store.collection('services').find({}).toArray();
 
@@ -203,6 +226,59 @@ module.exports = class BeautyUStudioDB extends DataSource {
 
             return this.userReducer(result.ops[0], userPhoto);
         } catch(err) {
+            return new Error(err);
+        }
+    }
+
+    async getAppointments(filter) {
+        let appointments = [];
+
+        try {
+            const query = [];
+
+            if (filter != null) {
+                filter = JSON.parse(JSON.stringify(filter));
+                
+                if (filter.stylist != null) {
+                    query.push({
+                        stylist: ObjectID.createFromHexString(filter.stylist.toString())
+                    });
+                }
+
+                if (filter.client != null) {
+                    query.push({
+                        client: ObjectID.createFromHexString(filter.client.toString())
+                    });
+                }
+            }
+
+            var expression = query.length > 0 ? { $or: query } : {};
+
+            appointments = await this.store.collection('appointments').find(expression).toArray();
+
+            if (Array.isArray(appointments)) {
+                for (var i = 0; i < appointments.length; i++) {
+                    let appointment = {};
+
+                    appointment.stylist = await this.getUser(appointments[i].stylist.toString());
+                    appointment.client = await this.getUser(appointments[i].client.toString());
+
+                    if (appointments[i].services) {
+                        appointment.services = appointments[i].services.map(async serviceId => await this.getService(serviceId.toString()));   
+                    } else {
+                        throw err("every appointment must have a service");
+                    }
+
+                    appointment.time = appointments[i].time;
+
+                    appointments[i] = appointment;
+                }
+            } else {
+                appointments = [];
+            }
+
+            return appointments;
+        } catch (err) {
             return new Error(err);
         }
     }
