@@ -59,12 +59,10 @@ module.exports = class BeautyUStudioDB extends DataSource {
     }
 
     appointmentReducer(appointment) {
-        appointment = {
-            ...appointment,
-            id: appointment._id
+        return {
+            id: appointment._id,
+            ...appointment
         };
-
-        return appointment;
     }
 
     async getService(serviceId) {
@@ -270,6 +268,7 @@ module.exports = class BeautyUStudioDB extends DataSource {
                     }
 
                     appointment.time = appointments[i].time;
+                    appointment.id = appointments[i]._id;
 
                     appointments[i] = appointment;
                 }
