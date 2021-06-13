@@ -54,7 +54,7 @@ const typeDefs = gql`
         about: String
     }
 
-    input AppointmentInput {
+    input AppointmentFilter {
         stylist: ID
         client: ID
     }
@@ -70,7 +70,7 @@ const typeDefs = gql`
         service(serviceId: ID!): Service!
         user(userId: ID!): User!
         users(role: String = "client"): [User!]
-        appointments(filter: AppointmentInput): [Appointment!]
+        appointments(filter: AppointmentFilter): [Appointment!]
     }
 
     type Mutation {
