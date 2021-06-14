@@ -11,6 +11,7 @@ module.exports = {
         removeService: (_, { serviceID }, { dataSources }) => dataSources.beautyUStudioDB.removeService(serviceID),
         updateService: (_, { serviceID, serviceInput }, { dataSources }) => dataSources.beautyUStudioDB.updateService(serviceID, serviceInput),
         singleUpload: (_, { file }, { dataSources }) => dataSources.beautyUStudioDB.uploadUserPhoto(file),
-        addUser: (_, { userInput }, { dataSources }) => dataSources.beautyUStudioDB.addUser(userInput)
+        addUser: (_, { userInput }, { dataSources }) => dataSources.beautyUStudioDB.addUser(userInput),
+        addAppointment: (_, { appointmentInput }, { dataSources }) => dataSources.beautyUStudioDB.addAppointment(appointmentInput)
     }
 };

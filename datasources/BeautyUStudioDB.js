@@ -304,4 +304,22 @@ module.exports = class BeautyUStudioDB extends DataSource {
                 });
         });
     }
+
+    async addAppointment(appointmentInput) {
+        const newAppointment = JSON.parse(JSON.stringify(appointmentInput));
+
+        try {
+            const result = await this.store.collection('appointments').insertOne(newAppointment);
+
+            if (!result) {
+                throw ('unable to create new appointment');
+            }
+
+            console.log(result);
+
+            return this.appointmentReducer(result.ops[0]);
+        } catch (err) {
+            return new Error(err);
+        }
+    }
 }

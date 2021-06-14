@@ -54,6 +54,13 @@ const typeDefs = gql`
         about: String
     }
 
+    input AppointmentInput {
+        stylist: ID!
+        client: ID!
+        services: [ID!]!
+        time: String!
+    }
+
     input AppointmentFilter {
         stylist: ID
         client: ID
@@ -79,6 +86,7 @@ const typeDefs = gql`
         removeService(serviceID: ID!): Service!
         updateService(serviceID: ID!, serviceInput: ServiceInput): Service!
         addUser(userInput: UserInput!): User!
+        addAppointment(appointmentInput: AppointmentInput): Appointment!
     }
 `;
 
