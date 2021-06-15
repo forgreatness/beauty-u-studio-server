@@ -322,7 +322,16 @@ module.exports = class BeautyUStudioDB extends DataSource {
                 throw ('unable to create new appointment');
             }
 
-            return this.appointmentReducer(result.ops[0]);
+            const appointment = result.ops[0];
+
+            appointment.stylist = await this.getUser(newAppointment.stylist.toHexString());
+            appointment.client = await this.getUser(newAppointment.client.toHexString());
+
+            appointment.services = await Promise.all(appointment.services.map(async service => {
+                return await this.getService(service.toHexString());
+            }));
+
+            return this.appointmentReducer(appointment);
         } catch (err) {
             return new Error(err);
         }
