@@ -309,13 +309,18 @@ module.exports = class BeautyUStudioDB extends DataSource {
         const newAppointment = JSON.parse(JSON.stringify(appointmentInput));
 
         try {
+            newAppointment.stylist = ObjectID.createFromHexString(newAppointment.stylist.toString());
+            newAppointment.client = ObjectID.createFromHexString(newAppointment.client.toString());
+
+            newAppointment.services = newAppointment.services.map(service => {
+                return ObjectID.createFromHexString(service.toString());
+            });
+
             const result = await this.store.collection('appointments').insertOne(newAppointment);
 
             if (!result) {
                 throw ('unable to create new appointment');
             }
-
-            console.log(result);
 
             return this.appointmentReducer(result.ops[0]);
         } catch (err) {
