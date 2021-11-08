@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
-const bodyParser = require('body-parser');  
 const { ApolloServer } = require('apollo-server-express');
 
 const { connectToDB, getDBReference } = require('./lib/mongo');
@@ -26,8 +25,8 @@ connectToDB(() => {
     const port = process.env.PORT || 8080;
 
     app.use(morgan('dev'));
-    app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({ extended: true }));
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
 
     server.applyMiddleware({ app });
 

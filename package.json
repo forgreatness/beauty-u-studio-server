@@ -4,13 +4,13 @@
   "description": "A backend service used as an interface to get data for BeautyUStudio applications",
   "main": "app.js",
   "dependencies": {
-    "apollo-datasource": "^0.7.2",
-    "apollo-server-express": "^2.19.0",
+    "apollo-datasource": "^0.7.3",
+    "apollo-server-express": "^2.25.3",
     "body-parser": "^1.19.0",
-    "dotenv": "^8.2.0",
+    "dotenv": "^8.6.0",
     "express": "^4.17.1",
-    "graphql": "^15.4.0",
-    "mongodb": "^3.6.3",
+    "graphql": "^15.7.2",
+    "mongodb": "^3.7.3",
     "morgan": "^1.10.0"
   },
   "devDependencies": {},
