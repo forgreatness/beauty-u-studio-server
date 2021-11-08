@@ -19,11 +19,11 @@ jobs:
       - name: Set up Node.js version
         uses: actions/setup-node@v1
         with:
-          node-version: '12.13.0'
+          node-version: '12.x'
 
       - name: npm install, build, and test
         run: |
-          npm install
+          npm install --save-dev
       
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     environment:
-      name: 'Production'
+      name: 'production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
@@ -49,6 +49,6 @@ jobs:
         id: deploy-to-webapp
         with:
           app-name: 'beautyustudioserver'
-          slot-name: 'Production'
+          slot-name: 'production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DE743A2B276042228C1F622345AAB36D }}
           package: .
