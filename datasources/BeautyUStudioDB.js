@@ -1,5 +1,10 @@
 const { DataSource } = require('apollo-datasource');
+const { UserInputError, AuthenticationError, ForbiddenError } = require('apollo-server-core');
 const { Int32, ObjectID, Double, GridFSBucket } = require('mongodb');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+const JWT_SIGNATURE = process.env.AUTH_SECRET;
 
 module.exports = class BeautyUStudioDB extends DataSource {
     constructor({ store }) {
@@ -65,6 +70,44 @@ module.exports = class BeautyUStudioDB extends DataSource {
         };
     }
 
+    async login(username, password) {
+        try {
+            if (username) {
+                const user = await this.store.collection('users').findOne({ email: username.toLowerCase() });
+
+                if (!user) {
+                    throw new AuthenticationError('Invalid credentials');
+                }
+
+                const match = await bcrypt.compare(password, user.password);
+
+                if (!match) {
+                    throw new AuthenticationError('Invalid Credentials');
+                }
+
+                const payload = {
+                    id: user._id,
+                    name: user.name,
+                    contact: user.phone,
+                    role: user.role,
+                };
+
+                const token = await jwt.sign(payload, JWT_SIGNATURE, {
+                    expiresIn: "7d",
+                    subject: "beautyustudioserver jwt",
+                    issuer: "beautyustudioserver",
+                    audience: "beautyustudioserver clients"
+                });
+                
+                return token; 
+            } else {
+                throw new UserInputError('Not a valid username');
+            }
+        } catch (err) {
+            return err;
+        }
+    }
+
     async getService(serviceId) {
         try {
             if (serviceId == null) {
@@ -80,54 +123,94 @@ module.exports = class BeautyUStudioDB extends DataSource {
     }
 
     async getServices() {
-        const services = await this.store.collection('services').find({}).toArray();
+        try {
+            const services = await this.store.collection('services').find({}).toArray();
 
-        return Array.isArray(services) ? services.map(service => this.serviceReducer(service)) : [];
+            return Array.isArray(services) ? services.map(service => this.serviceReducer(service)) : [];
+        } catch (err) {
+            return new Error(err);
+        }
     }
 
-    async addService({ serviceInput }) {
-        const service = JSON.parse(JSON.stringify(serviceInput));
-        service.time = new Int32(service.time).valueOf();
-
-        const result = await this.store.collection('services').insertOne(service);
-
-        return this.serviceReducer(result.ops[0]);
-    }
-
-    async removeService(serviceID) {
-        const service = await this.store.collection('services').findOne({ _id: ObjectID.createFromHexString(serviceID) });
-
-        if (service) {
-            const result = await this.store.collection('services').deleteOne({ _id: ObjectID.createFromHexString(serviceID) });
-        } else {
-            return new Error('No service was remove because it does not exist');
+    async addService(claim, serviceInput) {
+        if (!claim) {
+            throw new AuthenticationError('Request is not authenticated');
         }
 
-        return this.serviceReducer(service);
+        if ((claim?.role.toLowerCase() ?? "") != 'admin') {
+            throw new ForbiddenError('User does not have permission to add service');
+        }
+
+        try {
+            const service = JSON.parse(JSON.stringify(serviceInput));
+            service.time = new Int32(service.time).valueOf();
+    
+            const result = await this.store.collection('services').insertOne(service);
+    
+            return this.serviceReducer(result.ops[0]);
+        } catch (err) {
+            return new Error(err);
+        }
     }
 
-    async updateService(serviceID, serviceInput) {
-        serviceInput = JSON.parse(JSON.stringify(serviceInput));
-        serviceInput.time = new Int32(serviceInput.time);
-        serviceInput.price = new Double(serviceInput.price);
-        serviceInput = {
-            $set: serviceInput
-        };
+    async removeService(claim, serviceID) {
+        if (!claim) {
+            throw new AuthenticationError('Request is not authenticated');
+        }
 
-        const result = await this.store.collection('services').updateOne({ _id: ObjectID.createFromHexString(serviceID) }, serviceInput);
+        if ((claim?.role.toLowerCase() ?? "") != 'admin') {
+            throw new ForbiddenError('User does not have permission remove service');
+        }
 
-        if (result.result.n < 1) {
-            return new Error(`No Document with ObjectID ${serviceID} was found`);
-        } else {
-            if (result.result.nModified < 1) {
-                return new Error('Document with ObjectID ${serviceID} was not updated because input provided did not contain any updated data');
+        try {
+            const service = await this.store.collection('services').findOne({ _id: ObjectID.createFromHexString(serviceID) });
+
+            if (service) {
+                const result = await this.store.collection('services').deleteOne({ _id: ObjectID.createFromHexString(serviceID) });
+            } else {
+                return new Error('No service was remove because it does not exist');
             }
+    
+            return this.serviceReducer(service);
+        } catch (err) {
+            return new Error(err);
+        }
+    }
+
+    async updateService(claim, serviceID, serviceInput) {
+        if (!claim) {
+            throw new AuthenticationError('Request is not authenticated');
         }
 
-        return {
-            ...serviceInput["$set"],
-            id: ObjectID.createFromHexString(serviceID)
-        };
+        if ((claim?.role.toLowerCase() ?? "") != 'admin') {
+            throw new ForbiddenError('User does not have permission update service');
+        }
+
+        try {
+            serviceInput = JSON.parse(JSON.stringify(serviceInput));
+            serviceInput.time = new Int32(serviceInput.time);
+            serviceInput.price = new Double(serviceInput.price);
+            serviceInput = {
+                $set: serviceInput
+            };
+    
+            const result = await this.store.collection('services').updateOne({ _id: ObjectID.createFromHexString(serviceID) }, serviceInput);
+    
+            if (result.result.n < 1) {
+                return new Error(`No Document with ObjectID ${serviceID} was found`);
+            } else {
+                if (result.result.nModified < 1) {
+                    return new Error('Document with ObjectID ${serviceID} was not updated because input provided did not contain any updated data');
+                }
+            }
+    
+            return {
+                ...serviceInput["$set"],
+                id: ObjectID.createFromHexString(serviceID)
+            };
+        } catch (err) {
+            return new Error(err);
+        }
     }
 
     async uploadUserPhoto(file) {
@@ -148,18 +231,26 @@ module.exports = class BeautyUStudioDB extends DataSource {
             });
     }
 
-    async getUser(userId) {
+    async getUser(claim, userId) {
         try {
             const user = await this.store.collection('users').findOne({ _id: ObjectID.createFromHexString(userId) });
+
+            if (!user) {
+                throw new UserInputError("No user found");
+            }
+
+            if (user.role.toLowerCase() == 'client') {
+                if ((claim?.id ?? "") != userId) {
+                    if ((claim?.role.toLowerCase() ?? "") != 'stylist' && (claim?.role.toLowerCase() ?? "") != 'admin') {
+                        throw new ForbiddenError('if you are not an admin or stylists you are not allow to obtains other clients users details');
+                    }
+                }
+            }
 
             let downloadedPhoto = null;
 
             if (user.photo) {
                 downloadedPhoto = await this.downloadUserPhoto(user.photo);
-            }
-
-            if (!user) {
-                throw 'Error getting user, nothing was returned';
             }
 
             return this.userReducer(user, downloadedPhoto);
@@ -168,11 +259,21 @@ module.exports = class BeautyUStudioDB extends DataSource {
         }
     }
 
-    async getUsers(role) {
-        var users = [];
+    async getUsers(claim, role) {
+        if (!role) {
+            if ((claim?.role.toLowerCase() ?? "") != 'stylist' && (claim?.role.toLowerCase() ?? "") != 'admin') {
+                throw new ForbiddenError("Only admin or stylist can get all users details");
+            }
+        } else if (role.toLowerCase() == 'client') {
+            if ((claim?.role.toLowerCase() ?? "") != 'stylist' && (claim?.role.toLowerCase() ?? "") != 'admin') {
+                throw new ForbiddenError('Only admin or stylist can get all clients details');
+            }
+        }
 
         try {
-            if (role.toLowerCase() == 'all') {
+            var users = [];
+            
+            if (!role) {
                 users = await this.store.collection('users').find({}).toArray();
             } else {
                 users = await this.store.collection('users').find({ role: role }).toArray();
@@ -198,12 +299,22 @@ module.exports = class BeautyUStudioDB extends DataSource {
         }
     }
 
-    async addUser(userInput) {
+    async addUser(claim, userInput) {
         const user = JSON.parse(JSON.stringify(userInput));
 
-        if (user.role.toLowerCase() == 'stylist') {
+        if ((claim?.role.toLowerCase() ?? "") != 'admin') {
+            if (user.role.toLowerCase() == 'admin' || user.role.toLowerCase() == 'stylist') {
+                return new ForbiddenError("unable to create account due to restriction level");
+            }
+        }
+
+        if (user.role.toLowerCase() != 'admin' && user.role.toLowerCase() != 'stylist' && user.role.toLowerCase() != 'client') {
+            return new UserInputError('User only can only have admin, stylist, or client role');
+        }
+
+        if (user.role.toLowerCase() == 'stylist' || user.role.toLowerCase() == 'admin') {
             if (!user.photo || !user.about) {
-                return new Error('New user whom are stylist must have an existing photo uploaded to Database and an about')
+                return new UserInputError('New user whom are stylist or admin must have an existing photo uploaded to Database and an about')
             }
         }
 
@@ -228,15 +339,32 @@ module.exports = class BeautyUStudioDB extends DataSource {
         }
     }
 
-    async getAppointments(filter) {
-        let appointments = [];
+    async getAppointments(claim, filter) {
+        if (!claim) {
+            throw new AuthenticationError('Not authenticated');
+        }
+
+        filter = JSON.parse(JSON.stringify(filter));
+
+        if ((claim?.role.toLowerCase() ?? "") != 'admin' && (claim?.role.toLowerCase() ?? "") != 'stylist') {
+            if (filter.client) {
+                if ((claim?.id ?? "") != filter.client) {
+                    throw new ForbiddenError('User whom are clients can only get appointments for them or any of the stylists');
+                }
+            }
+
+            // If the user doesn't provide any filter input, then the system gets all appointments which should only be authorize
+            // for the admin and stylists. 
+            if (!filter.client && !filter.stylist) {
+                throw new ForbiddenError('Clients can only get appointments for them and the appointments of the stylist');
+            }
+        }
 
         try {
+            let appointments = [];
             const query = [];
 
             if (filter != null) {
-                filter = JSON.parse(JSON.stringify(filter));
-                
                 if (filter.stylist != null) {
                     query.push({
                         stylist: ObjectID.createFromHexString(filter.stylist.toString())
@@ -254,12 +382,14 @@ module.exports = class BeautyUStudioDB extends DataSource {
 
             appointments = await this.store.collection('appointments').find(expression).toArray();
 
+            claim.role = 'stylist';
+
             if (Array.isArray(appointments)) {
                 for (var i = 0; i < appointments.length; i++) {
                     let appointment = {};
 
-                    appointment.stylist = await this.getUser(appointments[i].stylist.toString());
-                    appointment.client = await this.getUser(appointments[i].client.toString());
+                    appointment.stylist = await this.getUser(claim, appointments[i].stylist.toString());
+                    appointment.client = await this.getUser(claim, appointments[i].client.toString());
 
                     if (appointments[i].services) {
                         appointment.services = appointments[i].services.map(async serviceId => await this.getService(serviceId.toString()));   
@@ -305,10 +435,32 @@ module.exports = class BeautyUStudioDB extends DataSource {
         });
     }
 
-    async addAppointment(appointmentInput) {
-        const newAppointment = JSON.parse(JSON.stringify(appointmentInput));
+    async addAppointment(claim, appointmentInput) {
+        if (!claim) {
+            throw new AuthenticationError("Must be sign in to book an appointment");
+        }
+
+        if ((claim?.role.toLowerCase() ?? "") != 'admin') {
+            if ((claim?.role.toLowerCase() ?? "") == 'stylist') {
+                if (claim.id != appointmentInput.client && claim.id != appointmentInput.stylist) {
+                    throw new ForbiddenError("Stylist can't book appointment for someone else");
+                }
+            }
+
+            if ((claim?.role.toLowerCase() ?? "") == 'client') {
+                if (claim.id != appointmentInput.client) {
+                    throw new ForbiddenError('Client are not allow to book appointments for someone else');
+                }
+            }
+
+            if ((claim?.role.toLowerCase() ?? "") == "") {
+                throw new ForbiddenError('User role is not permitted');
+            }
+        }
 
         try {
+            const newAppointment = JSON.parse(JSON.stringify(appointmentInput));
+
             newAppointment.stylist = ObjectID.createFromHexString(newAppointment.stylist.toString());
             newAppointment.client = ObjectID.createFromHexString(newAppointment.client.toString());
 
@@ -324,8 +476,8 @@ module.exports = class BeautyUStudioDB extends DataSource {
 
             const appointment = result.ops[0];
 
-            appointment.stylist = await this.getUser(newAppointment.stylist.toHexString());
-            appointment.client = await this.getUser(newAppointment.client.toHexString());
+            appointment.stylist = await this.getUser(claim, newAppointment.stylist.toHexString());
+            appointment.client = await this.getUser(claim, newAppointment.client.toHexString());
 
             appointment.services = await Promise.all(appointment.services.map(async service => {
                 return await this.getService(service.toHexString());

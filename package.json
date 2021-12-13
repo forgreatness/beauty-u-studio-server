@@ -5,17 +5,23 @@
   "main": "app.js",
   "dependencies": {
     "apollo-datasource": "^0.7.3",
+    "apollo-server-errors": "^3.3.0",
     "apollo-server-express": "^2.25.3",
+    "bcrypt": "^5.0.1",
+    "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "graphql": "^15.4.0",
+    "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.6.3",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "nodemon": "^2.0.15"
   },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+    "start": "node app.js",
+    "dev": "nodemon ./app.js"
   },
   "repository": {
     "type": "git",

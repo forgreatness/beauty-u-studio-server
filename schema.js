@@ -78,6 +78,7 @@ const typeDefs = gql`
         user(userId: ID!): User!
         users(role: String = "client"): [User!]
         appointments(filter: AppointmentFilter): [Appointment!]
+        login(username: String!, password: String!): String!
     }
 
     type Mutation {

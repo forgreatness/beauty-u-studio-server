@@ -2,11 +2,15 @@ require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const { ApolloServer } = require('apollo-server-express');
+const cors = require('cors');
+const jwt = require('jsonwebtoken');
 
 const { connectToDB, getDBReference } = require('./lib/mongo');
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
 const BeautyUStudioDB = require('./datasources/BeautyUStudioDB');
+
+const JWT_SIGNATURE = process.env.AUTH_SECRET;
 
 connectToDB(() => {
     const store = getDBReference();
@@ -18,6 +22,27 @@ connectToDB(() => {
     const server = new ApolloServer({
         typeDefs,
         resolvers,
+        context: async (context) => {
+            const header =  context.req.headers.authorization;
+
+            if (!header) return;
+
+            const token = header.split(" ")[1];
+
+            if (!token) return;
+
+            let decodeToken;
+
+            try {
+                decodeToken = await jwt.verify(token, JWT_SIGNATURE);
+            } catch (err) {
+                return;
+            }
+
+            if (!!!decodeToken) return;
+
+            return { claim: decodeToken };
+        },
         dataSources
     });
 
@@ -27,6 +52,13 @@ connectToDB(() => {
     app.use(morgan('dev'));
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
+
+    const corsOptions = {
+        origin: 'https://beautyustudioweb.azurewebsites.net/',
+        credentials: true
+    };
+
+    app.use(cors(corsOptions));
 
     server.applyMiddleware({ app });
 
