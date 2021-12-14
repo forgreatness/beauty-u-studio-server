@@ -54,7 +54,7 @@ connectToDB(() => {
     app.use(express.urlencoded({ extended: true }));
 
     const corsOptions = {
-        origin: 'https://beautyustudioweb.azurewebsites.net/',
+        origin: 'https://beautyustudioweb.azurewebsites.net',
         credentials: true
     };
 
