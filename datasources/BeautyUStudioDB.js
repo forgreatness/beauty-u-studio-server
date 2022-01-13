@@ -99,7 +99,7 @@ module.exports = class BeautyUStudioDB extends DataSource {
                     audience: "beautyustudioserver clients"
                 });
                 
-                return token; 
+                return token;
             } else {
                 throw new UserInputError('Not a valid username');
             }
@@ -302,16 +302,19 @@ module.exports = class BeautyUStudioDB extends DataSource {
     async addUser(claim, userInput) {
         const user = JSON.parse(JSON.stringify(userInput));
 
+        // You can only create admin or stylist account if you are an admin
         if ((claim?.role.toLowerCase() ?? "") != 'admin') {
             if (user.role.toLowerCase() == 'admin' || user.role.toLowerCase() == 'stylist') {
                 return new ForbiddenError("unable to create account due to restriction level");
             }
         }
 
+        // You can only create an account with the following listed roles
         if (user.role.toLowerCase() != 'admin' && user.role.toLowerCase() != 'stylist' && user.role.toLowerCase() != 'client') {
             return new UserInputError('User only can only have admin, stylist, or client role');
         }
 
+        // New account which are for stylist or admin must have a photo and about details
         if (user.role.toLowerCase() == 'stylist' || user.role.toLowerCase() == 'admin') {
             if (!user.photo || !user.about) {
                 return new UserInputError('New user whom are stylist or admin must have an existing photo uploaded to Database and an about')

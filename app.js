@@ -11,6 +11,7 @@ const resolvers = require('./resolvers');
 const BeautyUStudioDB = require('./datasources/BeautyUStudioDB');
 
 const JWT_SIGNATURE = process.env.AUTH_SECRET;
+const env = process.env.NODE_ENV || 'development';
 
 connectToDB(() => {
     const store = getDBReference();
@@ -54,7 +55,7 @@ connectToDB(() => {
     app.use(express.urlencoded({ extended: true }));
 
     const corsOptions = {
-        origin: 'https://beautyustudioweb.azurewebsites.net',
+        origin: (env == 'development') ? 'http://localhost:3000' : 'https://beautyustudioweb.azurewebsites.net',
         credentials: true
     };
 

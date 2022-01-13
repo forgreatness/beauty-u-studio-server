@@ -15,4 +15,4 @@ module.exports = {
         addUser: (_, { userInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.addUser(claim, userInput),
         addAppointment: (_, { appointmentInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.addAppointment(claim, appointmentInput)
     }
-};
+};  
