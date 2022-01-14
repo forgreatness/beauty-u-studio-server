@@ -55,13 +55,11 @@ connectToDB(() => {
     app.use(express.urlencoded({ extended: true }));
 
     const corsOptions = {
-        origin: 'https://beautyustudioweb.azurewebsites.net',
+        origin: (env == 'development') ? 'http://localhost:3000' : 'https://beautyustudioweb.azurewebsites.net',
         credentials: true
     };
 
-    app.use(cors(corsOptions));
-
-    server.applyMiddleware({ app });
+    server.applyMiddleware({ app, cors: corsOptions });
 
     app.use('', (req, res) => {
         res.send("Welcome to the data interface for BeautyUStudio");
