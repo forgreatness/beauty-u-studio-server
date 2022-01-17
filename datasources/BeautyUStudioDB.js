@@ -92,7 +92,7 @@ module.exports = class BeautyUStudioDB extends DataSource {
                     role: user.role,
                 };
 
-                const token = await jwt.sign(payload, JWT_SIGNATURE, {
+                const token = jwt.sign(payload, JWT_SIGNATURE, {
                     expiresIn: "7d",
                     subject: "beautyustudioserver jwt",
                     issuer: "beautyustudioserver",
@@ -328,7 +328,14 @@ module.exports = class BeautyUStudioDB extends DataSource {
                 user.photo = ObjectID.createFromHexString(user.photo);
 
                 userPhoto = await this.downloadUserPhoto(user.photo);
+
+                if (!userPhoto) {
+                    return new UserInputError('Unable to create account because provided photo is not valid');
+                }
             }
+
+            const hashedPassword = await bcrypt.hash(user.password, 10);
+            user.password = hashedPassword;
 
             const result = await this.store.collection('users').insertOne(user);
 
@@ -336,7 +343,21 @@ module.exports = class BeautyUStudioDB extends DataSource {
                 throw 'unable to create new user successfully';
             }
 
-            return this.userReducer(result.ops[0], userPhoto);
+            const newUser = result.ops[0];
+            const payload = {
+                id: newUser._id,
+                name: newUser.name,
+                contact: newUser.phone,
+                role: newUser.role
+            };
+            const token = await jwt.sign(payload, JWT_SIGNATURE, {
+                expiresIn: "7d",
+                subject: "beautyustudioserver jwt",
+                issuer: "beautyustudioserver",
+                audience: "beautyustudioserver clients"
+            });
+
+            return token;
         } catch(err) {
             return new Error(err);
         }
