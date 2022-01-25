@@ -350,7 +350,8 @@ module.exports = class BeautyUStudioDB extends DataSource {
                 contact: newUser.phone,
                 role: newUser.role
             };
-            const token = await jwt.sign(payload, JWT_SIGNATURE, {
+
+            const token = jwt.sign(payload, JWT_SIGNATURE, {
                 expiresIn: "7d",
                 subject: "beautyustudioserver jwt",
                 issuer: "beautyustudioserver",

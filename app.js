@@ -24,25 +24,27 @@ connectToDB(() => {
         typeDefs,
         resolvers,
         context: async (context) => {
-            const header =  context.req.headers.authorization;
-
-            if (!header) return;
-
-            const token = header.split(" ")[1];
-
-            if (!token) return;
-
-            let decodeToken;
-
             try {
+                const header =  context.req.headers.authorization;
+
+                if (!header)  throw 'no authorization header provided'
+
+                const token = header.split(" ")[1];
+
+                if (!token) throw 'no auth token founded on auth header'
+
+                let decodeToken;
+
                 decodeToken = await jwt.verify(token, JWT_SIGNATURE);
+
+                if (!decodeToken) {
+                    throw 'token is not valid';
+                }
+
+                return { claim: decodeToken };
             } catch (err) {
                 return;
             }
-
-            if (!!!decodeToken) return;
-
-            return { claim: decodeToken };
         },
         dataSources
     });
