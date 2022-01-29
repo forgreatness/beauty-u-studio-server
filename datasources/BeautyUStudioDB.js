@@ -302,6 +302,9 @@ module.exports = class BeautyUStudioDB extends DataSource {
     async addUser(claim, userInput) {
         const user = JSON.parse(JSON.stringify(userInput));
 
+        //With Current implementation all new user are active
+        user.status = "active";
+
         // You can only create admin or stylist account if you are an admin
         if ((claim?.role.toLowerCase() ?? "") != 'admin') {
             if (user.role.toLowerCase() == 'admin' || user.role.toLowerCase() == 'stylist') {

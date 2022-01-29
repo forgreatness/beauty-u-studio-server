@@ -23,6 +23,7 @@ const typeDefs = gql`
         email: String!
         phone: String!
         role: String!
+        status: String!
         photo: String
         about: String
     }
