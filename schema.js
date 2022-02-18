@@ -34,6 +34,7 @@ const typeDefs = gql`
         client: User!
         services: [Service!]!
         time: String!
+        status: String!
     }
 
     input ServiceInput {
@@ -60,6 +61,7 @@ const typeDefs = gql`
         client: ID!
         services: [ID!]!
         time: String!
+        status: String!
     }
 
     input AppointmentFilter {
@@ -88,7 +90,8 @@ const typeDefs = gql`
         removeService(serviceID: ID!): Service!
         updateService(serviceID: ID!, serviceInput: ServiceInput): Service!
         addUser(userInput: UserInput!): String!
-        addAppointment(appointmentInput: AppointmentInput): Appointment!
+        addAppointment(appointmentInput: AppointmentInput!): Appointment!
+        updateAppointment(appointmentID: ID!, appointmentInput: AppointmentInput): Appointment!
     }
 `;
 

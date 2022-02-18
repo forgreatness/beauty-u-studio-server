@@ -13,6 +13,7 @@ module.exports = {
         updateService: (_, { serviceID, serviceInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.updateService(claim, serviceID, serviceInput),
         singleUpload: (_, { file }, { dataSources }) => dataSources.beautyUStudioDB.uploadUserPhoto(file),
         addUser: (_, { userInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.addUser(claim, userInput),
-        addAppointment: (_, { appointmentInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.addAppointment(claim, appointmentInput)
+        addAppointment: (_, { appointmentInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.addAppointment(claim, appointmentInput),
+        updateAppointment: (_, { appointmentID, appointmentInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.updateAppointment(claim, appointmentID, appointmentInput) 
     }
 };  
