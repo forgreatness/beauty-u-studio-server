@@ -91,7 +91,8 @@ const typeDefs = gql`
         updateService(serviceID: ID!, serviceInput: ServiceInput): Service!
         addUser(userInput: UserInput!): String!
         addAppointment(appointmentInput: AppointmentInput!): Appointment!
-        updateAppointment(appointmentID: ID!, appointmentInput: AppointmentInput): Appointment!
+        updateAppointment(appointmentID: ID!, appointmentInput: AppointmentInput!): Appointment!
+        removeAppointment(appointmentID: ID!): Appointment!
     }
 `;
 

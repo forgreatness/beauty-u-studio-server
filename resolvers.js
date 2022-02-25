@@ -14,6 +14,7 @@ module.exports = {
         singleUpload: (_, { file }, { dataSources }) => dataSources.beautyUStudioDB.uploadUserPhoto(file),
         addUser: (_, { userInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.addUser(claim, userInput),
         addAppointment: (_, { appointmentInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.addAppointment(claim, appointmentInput),
-        updateAppointment: (_, { appointmentID, appointmentInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.updateAppointment(claim, appointmentID, appointmentInput) 
+        updateAppointment: (_, { appointmentID, appointmentInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.updateAppointment(claim, appointmentID, appointmentInput),
+        removeAppointment: (_, { appointmentID }, { dataSources, claim }) => dataSources.beautyUStudioDB.removeAppointment(claim, appointmentID) 
     }
 };  

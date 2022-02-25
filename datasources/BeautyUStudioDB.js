@@ -523,23 +523,23 @@ module.exports = class BeautyUStudioDB extends DataSource {
             return new AuthenticationError("Must be sign in to update appointment");
         }
 
-        if ((claim?.role?.toLowerCase() ?? "") !== "admin") {
-            try {
+        try {
+            if ((claim?.role?.toLowerCase() ?? "") !== "admin") {
                 let originalAppointment = await this.store.collection('appointments').findOne({ _id: ObjectID.createFromHexString(appointmentID) });
 
                 if (!originalAppointment) {
                     return new UserInputError("Unable to find an appointment with that ID");
                 }
-
+    
                 if (claim.id == originalAppointment.client ) {
                     if (appointmentInput.client != claim.id) {
                         return new ForbiddenError("If you are the client of the original appointment, you must also be the client of the updated appointment");
                     }
-
+    
                     if (appointmentInput.status != 'Requested' && appointmentInput.status != 'Cancelled') {
                         return new ForbiddenError("Clients of any appointments can only request or cancel that appointment");
                     }
-
+    
                     if (appointmentInput.stylist == claim.id) {
                         return new ForbiddenError("You dont have permission to be stylist");
                     }
@@ -547,48 +547,88 @@ module.exports = class BeautyUStudioDB extends DataSource {
                     if (appointmentInput.stylist != claim.id) {
                         return new ForbiddenError("Although you are a stylist, you can not schedule appointments for other stylist");
                     }
-
+    
                     if (appointmentInput.client == claim.id) {
                         return new ForbiddenError("You can't be your own client");
                     }
                 } else {
                     return new ForbiddenError('User whom are not admin cannot modify appointments which are not under your name');
                 }
-
-                // const updatedAppointment = JSON.parse(JSON.stringify(appointmentInput));
-
-                appointmentInput.stylist = ObjectID.createFromHexString(appointmentInput.stylist.toString());
-                appointmentInput.client = ObjectID.createFromHexString(appointmentInput.client.toString());
-                appointmentInput.services = appointmentInput.services.map(service => {
-                    return ObjectID.createFromHexString(service.toString());
-                });
-
-                appointmentInput = {
-                    $set: appointmentInput
-                };
-
-                const result = await this.store.collection('appointments').updateOne({ _id: ObjectID.createFromHexString(appointmentID) }, appointmentInput);
-
-                if (result?.result.n < 1 ?? true) {
-                    throw `No Document with ObjectID ${appointmentID} was found`;
-                } else {
-                    if (result?.result.nModified < 1 ?? true) {
-                        throw 'Document with ObjectID ${serviceID} was not updated because input provided did not contain any updated data';
-                    }
-                }
-
-                const appointment = appointmentInput["$set"];
-                appointment.stylist = await this.getUser(claim, appointment.stylist.toHexString());
-                appointment.client = await this.getUser(claim, appointment.client.toHexString());
-                appointment.services = await Promise.all(appointment.services.map(async service => {
-                    return await this.getService(service.toHexString());
-                }));
-                
-
-                return this.appointmentReducer(appointment);
-            } catch (err) {
-                return new Error(err);
             }
+
+            appointmentInput.stylist = ObjectID.createFromHexString(appointmentInput.stylist.toString());
+            appointmentInput.client = ObjectID.createFromHexString(appointmentInput.client.toString());
+            appointmentInput.services = appointmentInput.services.map(service => {
+                return ObjectID.createFromHexString(service.toString());
+            });
+
+            appointmentInput = {
+                $set: appointmentInput
+            };
+
+            const result = await this.store.collection('appointments').updateOne({ _id: ObjectID.createFromHexString(appointmentID) }, appointmentInput);
+
+            if (result?.result.n < 1 ?? true) {
+                throw `No Document with ObjectID ${appointmentID} was found`;
+            } else {
+                if (result?.result.nModified < 1 ?? true) {
+                    throw 'Document with ObjectID ${serviceID} was not updated because input provided did not contain any updated data';
+                }
+            }
+
+            const appointment = {
+                id: ObjectID.createFromHexString(appointmentID),
+                ...appointmentInput["$set"]
+            }
+            appointment.stylist = await this.getUser(claim, appointment.stylist.toHexString());
+            appointment.client = await this.getUser(claim, appointment.client.toHexString());
+            appointment.services = await Promise.all(appointment.services.map(async service => {
+                return await this.getService(service.toHexString());
+            }));
+            
+            return this.appointmentReducer(appointment);
+        } catch (err) {
+            return new Error(err);
+        }
+    }
+
+    async removeAppointment (claim, appointmentID) {
+        if (!claim) {
+            return new AuthenticationError("Must be sign in to update appointment");
+        }
+
+        try {
+            let originalAppointment = await this.store.collection("appointments").findOne({ _id: ObjectID.createFromHexString(appointmentID) });
+
+            if (!originalAppointment) {
+                return new UserInputError("Unable to find an appointment with that ID");
+            }
+
+            if ((claim?.role?.toLowerCase() ?? "") !== "admin") {
+                if (claim.id == originalAppointment.client) {
+                    if ((originalAppointment?.status?.toLowerCase() ?? "") != 'requested') {
+                        return new ForbiddenError("As user who is a client, you are permitted to only remove requested appointment");
+                    }
+                } else if (claim.id != originalAppointment.stylist) {
+                    return new ForbiddenError("User whom are not admin cannot remove appointments which are not under your name");
+                }
+            }
+
+            const result = await this.store.collection("appointments").deleteOne({ _id: ObjectID.createFromHexString(appointmentID) });
+
+            if ((result?.deletedCount ?? 0) < 1) {
+                throw 'unable to delete the specified appointment';
+            }
+
+            originalAppointment.stylist = await this.getUser(claim, originalAppointment.stylist.toHexString());
+            originalAppointment.client = await this.getUser(claim, originalAppointment.client.toHexString());
+            originalAppointment.services = await Promise.all(originalAppointment.services.map(async service => {
+                return await this.getService(service.toHexString());
+            }));
+
+            return this.appointmentReducer(originalAppointment);
+        } catch (err) {
+            return new Error(err);
         }
     }
 }
