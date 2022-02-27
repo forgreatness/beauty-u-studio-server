@@ -397,6 +397,10 @@ module.exports = class BeautyUStudioDB extends DataSource {
                     query.push({
                         stylist: ObjectID.createFromHexString(filter.stylist.toString())
                     });
+
+                    query.push({
+                        client: ObjectID.createFromHexString(filter.stylist.toString())
+                    });
                 }
 
                 if (filter.client != null) {
