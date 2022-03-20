@@ -14,7 +14,8 @@ const typeDefs = gql`
         name: String!
         description: String!
         price: Float!
-        time: Int!
+        time: Int!,
+        status: String!
     }
 
     type User {
@@ -43,7 +44,8 @@ const typeDefs = gql`
         description: String!
         price: Float!
         time: Int!
-        kind: [String!]
+        kind: [String!],
+        status: String!
     }
     
     input UserInput {

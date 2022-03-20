@@ -111,10 +111,14 @@ module.exports = class BeautyUStudioDB extends DataSource {
     async getService(serviceId) {
         try {
             if (serviceId == null) {
-                throw 'serviceId input is missing from parameter';
+                throw new UserInputError('serviceId input is missing from parameter');
             }
 
             const service = await this.store.collection('services').findOne({ _id: ObjectID.createFromHexString(serviceId) });
+
+            if (!service) {
+                throw new UserInputError('ServiceId does not exist');
+            }
 
             return this.serviceReducer(service);
         } catch (err) {
@@ -143,9 +147,14 @@ module.exports = class BeautyUStudioDB extends DataSource {
 
         try {
             const service = JSON.parse(JSON.stringify(serviceInput));
-            service.time = new Int32(service.time).valueOf();
+            service.price = new Double(service.price);
+            service.time = new Int32(service.time);
     
             const result = await this.store.collection('services').insertOne(service);
+
+            if (!result?.insertedCount) {
+                throw new Error('Unable to create new service');
+            }
     
             return this.serviceReducer(result.ops[0]);
         } catch (err) {
