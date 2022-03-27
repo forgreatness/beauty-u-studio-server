@@ -47,6 +47,13 @@ module.exports = class BeautyUStudioDB extends DataSource {
         }
     }
 
+    promotionReducer(promotion) {
+        return {
+            ...promotion,
+            id: promotion._id
+        }
+    }
+
     userReducer(user, userPhoto) {
         user = {
             ...user,
@@ -376,9 +383,33 @@ module.exports = class BeautyUStudioDB extends DataSource {
         }
     }
 
+    async getPromotions(claim) {
+        if (!claim) {
+            return new AuthenticationError('Not authenticated');
+        }
+
+        if ((claim?.role.toLowerCase() ?? "") != 'admin') {
+            return new ForbiddenError('User is not authorized to perform action');
+        }
+
+        try {
+            let promotions = await this.store.collection('promotions').find({}).toArray();
+
+            if (Array.isArray(promotions)) {
+                promotions = promotions.map(promotion => this.promotionReducer(promotion));
+            } else {
+                throw '';
+            }
+
+            return promotions;
+        } catch (err) {
+            return new Error(err?.message ?? 'Server Error');
+        }
+    }
+
     async getAppointments(claim, filter) {
         if (!claim) {
-            throw new AuthenticationError('Not authenticated');
+            return new AuthenticationError('Not authenticated');
         }
 
         filter = JSON.parse(JSON.stringify(filter));
@@ -386,14 +417,14 @@ module.exports = class BeautyUStudioDB extends DataSource {
         if ((claim?.role.toLowerCase() ?? "") != 'admin' && (claim?.role.toLowerCase() ?? "") != 'stylist') {
             if (filter.client) {
                 if ((claim?.id ?? "") != filter.client) {
-                    throw new ForbiddenError('User whom are clients can only get appointments for them or any of the stylists');
+                    return new ForbiddenError('User whom are clients can only get appointments for them or any of the stylists');
                 }
             }
 
             // If the user doesn't provide any filter input, then the system gets all appointments which should only be authorize
             // for the admin and stylists. 
             if (!filter.client && !filter.stylist) {
-                throw new ForbiddenError('Clients can only get appointments for them and the appointments of the stylist');
+                return new ForbiddenError('Clients can only get appointments for them and the appointments of the stylist');
             }
         }
 
@@ -405,6 +436,10 @@ module.exports = class BeautyUStudioDB extends DataSource {
                 if (filter.stylist != null) {
                     query.push({
                         stylist: ObjectID.createFromHexString(filter.stylist.toString())
+                    });
+
+                    query.push({
+                        client: ObjectID.createFromHexString(filter.stylist.toString())
                     });
                 }
 

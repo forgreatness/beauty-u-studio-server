@@ -5,6 +5,7 @@ module.exports = {
         users: (_, { role }, { dataSources, claim }) => dataSources.beautyUStudioDB.getUsers(claim, role),
         user: (_, { userId }, { dataSources, claim }) => dataSources.beautyUStudioDB.getUser(claim, userId),
         appointments: (_, { filter }, { dataSources, claim }) => dataSources.beautyUStudioDB.getAppointments(claim, filter),
+        promotions: (_, __, { dataSources, claim }) => dataSources.beautyUStudioDB.getPromotions(claim),
         login: (_, { username, password }, { dataSources }) => dataSources.beautyUStudioDB.login(username, password)
     },
     Mutation: {

@@ -7,6 +7,17 @@ const typeDefs = gql`
         encoding: String!
     }
 
+    type Promotion {
+        id: ID!
+        code: String!
+        description: String!
+        type: String!
+        amount: Int!
+        start: String!
+        end: String!
+        services: [ID!]!
+    }
+
     type Service {
         id: ID!
         type: String!
@@ -36,6 +47,16 @@ const typeDefs = gql`
         services: [Service!]!
         time: String!
         status: String!
+    }
+
+    input PromotionInput {
+        code: String!
+        description: String!
+        type: String!
+        amount: Int!
+        start: String!
+        end: String!
+        services: [ID!]!
     }
 
     input ServiceInput {
@@ -84,10 +105,14 @@ const typeDefs = gql`
         users(role: String = "client"): [User!]
         appointments(filter: AppointmentFilter): [Appointment!]
         login(username: String!, password: String!): String!
+        promotions: [Promotion!]
     }
 
     type Mutation {
         singleUpload(file: Upload!) : ID!
+        addPromotion(promotionInput: PromotionInput!) : Promotion!
+        removePromotion(promotionID: ID!) : Promotion!
+        updatePromotion(promotionID: ID!, promotionInput: PromotionInput!) : Promotion!
         addService(serviceInput: ServiceInput!): Service!
         removeService(serviceID: ID!): Service!
         updateService(serviceID: ID!, serviceInput: ServiceInput): Service!
