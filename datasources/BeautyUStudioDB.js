@@ -115,6 +115,44 @@ module.exports = class BeautyUStudioDB extends DataSource {
         }
     }
 
+    async activateUser(userId, activationCode) {
+        try {
+            let user = await this.store.collection('users').findOne({ _id: ObjectID.createFromHexString(userId) });
+
+            if (!user || user.activationCode != activationCode) {
+                throw UserInputError('invalid activation link');
+            } 
+
+            let activate = await this.store.collection("users").updateOne({ _id: ObjectID.createFromHexString(userId) }, { $set: { status: 'active' } });
+
+            if (activate.result.n < 1) {
+                return new Error(`No Document with ObjectID ${userId} was found`);
+            } else {
+                if (activate.result.nModified < 1) {
+                    return new Error(`Document with ObjectID ${userId} was not updated because input provided did not contain any updated data`);
+                }
+            }
+
+            const payload = {
+                id: user._id,
+                name: user.name,
+                contact: user.phone,
+                role: user.role,
+            };
+
+            const token = jwt.sign(payload, JWT_SIGNATURE, {
+                expiresIn: "7d",
+                subject: "beautyustudioserver jwt",
+                issuer: "beautyustudioserver",
+                audience: "beautyustudioserver clients"
+            });
+            
+            return token;
+        } catch (err) {
+            return err;
+        }
+    }
+
     async getService(serviceId) {
         try {
             if (serviceId == null) {
@@ -319,7 +357,7 @@ module.exports = class BeautyUStudioDB extends DataSource {
         const user = JSON.parse(JSON.stringify(userInput));
 
         //With Current implementation all new user are active
-        user.status = "active";
+        user.status = "not activated";
 
         // You can only create admin or stylist account if you are an admin
         if ((claim?.role.toLowerCase() ?? "") != 'admin') {

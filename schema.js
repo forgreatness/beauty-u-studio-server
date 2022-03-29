@@ -38,6 +38,7 @@ const typeDefs = gql`
         status: String!
         photo: String
         about: String
+        activationCode: String!
     }
 
     type Appointment {
@@ -75,6 +76,7 @@ const typeDefs = gql`
         password: String!
         phone: String!
         role: String!
+        activationCode: String!
         photo: ID
         about: String
     }
@@ -110,6 +112,7 @@ const typeDefs = gql`
 
     type Mutation {
         singleUpload(file: Upload!) : ID!
+        activateUser(userId: ID!, activationCode: String!): String!
         addPromotion(promotionInput: PromotionInput!) : Promotion!
         removePromotion(promotionID: ID!) : Promotion!
         updatePromotion(promotionID: ID!, promotionInput: PromotionInput!) : Promotion!

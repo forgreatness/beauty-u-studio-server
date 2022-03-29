@@ -9,6 +9,7 @@ module.exports = {
         login: (_, { username, password }, { dataSources }) => dataSources.beautyUStudioDB.login(username, password)
     },
     Mutation: {
+        activateUser: (_, { userId, activationCode }, { dataSources }) => dataSources.beautyUStudioDB.activateUser(userId, activationCode),
         addService: (_, { serviceInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.addService(claim, serviceInput),
         removeService: (_, { serviceID }, { dataSources, claim }) => dataSources.beautyUStudioDB.removeService(claim, serviceID),
         updateService: (_, { serviceID, serviceInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.updateService(claim, serviceID, serviceInput),
