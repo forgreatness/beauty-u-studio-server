@@ -421,6 +421,34 @@ module.exports = class BeautyUStudioDB extends DataSource {
         }
     }
 
+    async addPromotion(claim, promotionInput) {
+        try {
+            if (!claim) {
+                return new AuthenticationError('Action requires authentication');
+            }
+
+            if ((claim?.role ?? "") != 'admin') {
+                return new ForbiddenError('Action is not permitted for user crendentials');
+            }
+
+            const newPromotion = JSON.parse(JSON.stringify(promotionInput));
+
+            newPromotion.services.forEach((serviceId, index) => {
+                newPromotion.services[index] = ObjectID.createFromHexString(serviceId);
+            });
+
+            let addPromotion = await this.store.collection('promotions').insertOne(newPromotion);
+
+            if (!addPromotion?.insertedCount) {
+                throw new Error('Server Error: Unable to create new promotion');
+            }
+
+            return this.promotionReducer(addPromotion.ops[0]);
+        } catch (err) {
+            return new Error(err?.message ?? 'Server Error');
+        }
+    }
+
     async getPromotions(claim) {
         if (!claim) {
             return new AuthenticationError('Not authenticated');
@@ -436,7 +464,7 @@ module.exports = class BeautyUStudioDB extends DataSource {
             if (Array.isArray(promotions)) {
                 promotions = promotions.map(promotion => this.promotionReducer(promotion));
             } else {
-                throw '';
+                throw new Error('Server Error');
             }
 
             return promotions;
