@@ -421,6 +421,34 @@ module.exports = class BeautyUStudioDB extends DataSource {
         }
     }
 
+    async removePromotion(claim, promotionID) {
+        try {
+            if (!claim) {
+                return new AuthenticationError('Action requires authentication');
+            }
+
+            if ((claim?.role ?? "") != 'admin') {
+                return new ForbiddenError('Action is not permitted for user crendentials');
+            }
+
+            const originalPromotion = await this.store.collection('promotions').findOne({ _id: ObjectID.createFromHexString(promotionID ?? '') });
+
+            if (!originalPromotion) {
+                throw new UserInputError('Invalid user input, promotion does not exist');
+            }
+
+            const removePromotion = await this.store.collection('promotions').deleteOne({ _id: ObjectID.createFromHexString(promotionID ?? '') });
+
+            if ((removePromotion?.deletedCount ?? 0) < 1) {
+                throw 'Unable to remove the specified promotion';
+            }
+
+            return this.promotionReducer(originalPromotion);
+        } catch (err) {
+            return new Error(err?.message ?? 'Server Error');
+        }
+    }
+
     async addPromotion(claim, promotionInput) {
         try {
             if (!claim) {
