@@ -1,6 +1,8 @@
 const { gql } = require('apollo-server-express');
 
 const typeDefs = gql`
+    scalar FileUpload
+
     type File {
         filename: String!
         mimetype: String!
@@ -48,6 +50,8 @@ const typeDefs = gql`
         services: [Service!]!
         time: String!
         status: String!
+        discount: Float
+        details: String
     }
 
     input PromotionInput {
@@ -87,6 +91,8 @@ const typeDefs = gql`
         services: [ID!]!
         time: String!
         status: String!
+        discount: Float
+        details: String
     }
 
     input AppointmentFilter {
@@ -105,13 +111,13 @@ const typeDefs = gql`
         service(serviceId: ID!): Service!
         user(userId: ID!): User!
         users(role: String = "client"): [User!]
-        appointments(filter: AppointmentFilter): [Appointment!]
+        appointments(filter: AppointmentFilter, future: Boolean = false): [Appointment!]
         login(username: String!, password: String!): String!
         promotions: [Promotion!]
     }
 
     type Mutation {
-        singleUpload(file: Upload!) : ID!
+        singleUpload(file: FileUpload!) : ID!
         activateUser(userId: ID!, activationCode: String!): String!
         addPromotion(promotionInput: PromotionInput!) : Promotion!
         removePromotion(promotionID: ID!) : Promotion!

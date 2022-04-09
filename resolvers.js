@@ -1,10 +1,13 @@
+const { GraphQLUpload } = require('graphql-upload');
+
 module.exports = {
+    FileUpload: GraphQLUpload,
     Query: {
         service: (_, { serviceId }, { dataSources }) => dataSources.beautyUStudioDB.getService(serviceId),
         services: (_, __, { dataSources }) => dataSources.beautyUStudioDB.getServices(),
         users: (_, { role }, { dataSources, claim }) => dataSources.beautyUStudioDB.getUsers(claim, role),
         user: (_, { userId }, { dataSources, claim }) => dataSources.beautyUStudioDB.getUser(claim, userId),
-        appointments: (_, { filter }, { dataSources, claim }) => dataSources.beautyUStudioDB.getAppointments(claim, filter),
+        appointments: (_, { filter, future }, { dataSources, claim }) => dataSources.beautyUStudioDB.getAppointments(claim, filter, future),
         promotions: (_, __, { dataSources, claim }) => dataSources.beautyUStudioDB.getPromotions(claim),
         login: (_, { username, password }, { dataSources }) => dataSources.beautyUStudioDB.login(username, password)
     },
@@ -21,4 +24,4 @@ module.exports = {
         updateAppointment: (_, { appointmentID, appointmentInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.updateAppointment(claim, appointmentID, appointmentInput),
         removeAppointment: (_, { appointmentID }, { dataSources, claim }) => dataSources.beautyUStudioDB.removeAppointment(claim, appointmentID) 
     }
-};  
+};      

@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const { ApolloServer } = require('apollo-server-express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const { graphqlUploadExpress } = require('graphql-upload');
 
 const { connectToDB, getDBReference } = require('./lib/mongo');
 const typeDefs = require('./schema');
@@ -46,10 +47,14 @@ connectToDB(() => {
                 return;
             }
         },
+        uploads: false,
         dataSources
     });
 
     const app = express();
+
+    app.use(graphqlUploadExpress());
+
     const port = process.env.PORT || 8080;
 
     app.use(morgan('dev'));

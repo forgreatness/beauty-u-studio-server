@@ -482,10 +482,6 @@ module.exports = class BeautyUStudioDB extends DataSource {
             return new AuthenticationError('Not authenticated');
         }
 
-        if ((claim?.role.toLowerCase() ?? "") != 'admin') {
-            return new ForbiddenError('User is not authorized to perform action');
-        }
-
         try {
             let promotions = await this.store.collection('promotions').find({}).toArray();
 
@@ -501,7 +497,7 @@ module.exports = class BeautyUStudioDB extends DataSource {
         }
     }
 
-    async getAppointments(claim, filter) {
+    async getAppointments(claim, filter, future) {
         if (!claim) {
             return new AuthenticationError('Not authenticated');
         }
@@ -551,6 +547,10 @@ module.exports = class BeautyUStudioDB extends DataSource {
             claim.role = 'stylist';
 
             if (Array.isArray(appointments)) {
+                if (future) {
+                    appointments = appointments.filter(appointment => new Date(appointment.time) > Date.now());
+                }
+
                 for (var i = 0; i < appointments.length; i++) {
                     let appointment = {};
 
@@ -566,6 +566,8 @@ module.exports = class BeautyUStudioDB extends DataSource {
                     appointment.time = appointments[i].time;
                     appointment.id = appointments[i]._id;
                     appointment.status = appointments[i].status;
+                    appointment.discount = appointments[i].discount;
+                    appointment.details = appointments[i].details;
 
                     appointments[i] = appointment;
                 }
@@ -635,6 +637,10 @@ module.exports = class BeautyUStudioDB extends DataSource {
                 return ObjectID.createFromHexString(service.toString());
             });
 
+            if (newAppointment.discount) {
+                newAppointment.discount = new Double(newAppointment.discount);
+            }
+
             const result = await this.store.collection('appointments').insertOne(newAppointment);
 
             if (!result) {
@@ -699,6 +705,10 @@ module.exports = class BeautyUStudioDB extends DataSource {
             appointmentInput.services = appointmentInput.services.map(service => {
                 return ObjectID.createFromHexString(service.toString());
             });
+
+            if (appointmentInput.discount) {
+                appointmentInput.discount = new Double(appointmentInput.discount);
+            }
 
             appointmentInput = {
                 $set: appointmentInput
