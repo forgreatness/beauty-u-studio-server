@@ -637,8 +637,14 @@ module.exports = class BeautyUStudioDB extends DataSource {
                 return ObjectID.createFromHexString(service.toString());
             });
 
-            if (newAppointment.discount) {
+            if (newAppointment?.discount) {
                 newAppointment.discount = new Double(newAppointment.discount);
+            } else {
+                delete newAppointment.discount;
+            }
+
+            if (newAppointment?.details) {
+                delete newAppointment.details;
             }
 
             const result = await this.store.collection('appointments').insertOne(newAppointment);
@@ -706,8 +712,14 @@ module.exports = class BeautyUStudioDB extends DataSource {
                 return ObjectID.createFromHexString(service.toString());
             });
 
-            if (appointmentInput.discount) {
+            if (appointmentInput?.discount) {
                 appointmentInput.discount = new Double(appointmentInput.discount);
+            } else {
+                delete appointmentInput.discount;
+            }
+
+            if (!appointmentInput?.details) {
+                delete appointmentInput.details;
             }
 
             appointmentInput = {
