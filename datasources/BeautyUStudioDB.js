@@ -153,6 +153,68 @@ module.exports = class BeautyUStudioDB extends DataSource {
         }
     }
 
+    async getAccountRecoveryToken(username) {
+        try {
+            let user = await this.store.collection('users').findOne({ email: username });
+
+            if (!user || user.status == "suspended") {
+                throw new UserInputError('Unable to find user');
+            }
+
+            const payload = {
+                id: user._id,
+                name: user.name,
+                username: user.email,
+                accountRecoveryCode: user.accountRecoveryCode
+            };
+
+            const accountRecoveryToken = jwt.sign(payload, JWT_SIGNATURE, {
+                expiresIn: "7d",
+                subject: "beautyustudioserver accountRecovery jwt",
+                issuer: "beautyustudioserver",
+                audience: "beautyustudioserver clients"
+            });
+
+            return accountRecoveryToken;
+        } catch (err) {
+            return err;
+        }
+    }
+
+    async recoverAccount(accountRecoveryToken) {
+        try {
+            const decodedToken = await jwt.verify(accountRecoveryToken, JWT_SIGNATURE);
+
+            if (!decodedToken || (decodedToken?.exp ?? 0 ) * 1000 < Date.now() || !decodedToken?.username || !decodedToken?.accountRecoveryCode) {
+                throw new AuthenticationError('Invalid account recovery token');
+            }
+
+            const user = await this.store.collection('users').findOne({ _id: ObjectID.createFromHexString(decodedToken.id) });
+
+            if (!user || user?.accountRecoveryCode != decodedToken.accountRecoveryCode) {
+                throw new Error('Unable to recover account');
+            }
+
+            const payload = {
+                id: user._id,
+                name: user.name,
+                contact: user.phone,
+                role: user.role,
+            };
+
+            const token = jwt.sign(payload, JWT_SIGNATURE, {
+                expiresIn: "7d",
+                subject: "beautyustudioserver jwt",
+                issuer: "beautyustudioserver",
+                audience: "beautyustudioserver clients"
+            });
+            
+            return token;
+        } catch (err) {
+            return new Error(err);
+        }
+    }
+
     async getService(serviceId) {
         try {
             if (serviceId == null) {

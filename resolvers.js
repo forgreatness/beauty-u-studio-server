@@ -9,7 +9,9 @@ module.exports = {
         user: (_, { userId }, { dataSources, claim }) => dataSources.beautyUStudioDB.getUser(claim, userId),
         appointments: (_, { filter, future }, { dataSources, claim }) => dataSources.beautyUStudioDB.getAppointments(claim, filter, future),
         promotions: (_, __, { dataSources, claim }) => dataSources.beautyUStudioDB.getPromotions(claim),
-        login: (_, { username, password }, { dataSources }) => dataSources.beautyUStudioDB.login(username, password)
+        login: (_, { username, password }, { dataSources }) => dataSources.beautyUStudioDB.login(username, password),
+        accountRecoveryToken: (_, { username }, { dataSources }) => dataSources.beautyUStudioDB.getAccountRecoveryToken(username),
+        recoverAccount: (_, { accountRecoveryToken }, { dataSources }) => dataSources.beautyUStudioDB.recoverAccount(accountRecoveryToken)
     },
     Mutation: {
         activateUser: (_, { userId, activationCode }, { dataSources }) => dataSources.beautyUStudioDB.activateUser(userId, activationCode),

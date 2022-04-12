@@ -41,6 +41,7 @@ const typeDefs = gql`
         photo: String
         about: String
         activationCode: String!
+        accountRecoveryCode: String!
     }
 
     type Appointment {
@@ -81,6 +82,7 @@ const typeDefs = gql`
         phone: String!
         role: String!
         activationCode: String!
+        accountRecoveryCode: String!
         photo: ID
         about: String
     }
@@ -114,6 +116,8 @@ const typeDefs = gql`
         appointments(filter: AppointmentFilter, future: Boolean = false): [Appointment!]
         login(username: String!, password: String!): String!
         promotions: [Promotion!]
+        accountRecoveryToken(username: String!): String!
+        recoverAccount(accountRecoveryToken: String!): String!
     }
 
     type Mutation {
