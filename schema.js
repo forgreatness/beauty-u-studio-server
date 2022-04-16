@@ -42,6 +42,7 @@ const typeDefs = gql`
         about: String
         activationCode: String!
         accountRecoveryCode: String!
+        capabilities: [ID!]
     }
 
     type Appointment {
@@ -85,6 +86,7 @@ const typeDefs = gql`
         accountRecoveryCode: String!
         photo: ID
         about: String
+        capabilities: [ID!]
     }
 
     input AppointmentInput {

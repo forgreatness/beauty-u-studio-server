@@ -155,7 +155,7 @@ module.exports = class BeautyUStudioDB extends DataSource {
 
     async getAccountRecoveryToken(username) {
         try {
-            let user = await this.store.collection('users').findOne({ email: username });
+            let user = await this.store.collection('users').findOne({ email: username.toLowerCase() });
 
             if (!user || user.status == "suspended") {
                 throw new UserInputError('Unable to find user');
@@ -451,6 +451,12 @@ module.exports = class BeautyUStudioDB extends DataSource {
                 if (!userPhoto) {
                     return new UserInputError('Unable to create account because provided photo is not valid');
                 }
+            }
+
+            if (!user?.capabilities) {
+                user.capabilities = user.capabilities.map(service => {
+                    return ObjectID.createFromHexString(service.toString());
+                });
             }
 
             const hashedPassword = await bcrypt.hash(user.password, 10);
