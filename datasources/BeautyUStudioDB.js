@@ -453,7 +453,7 @@ module.exports = class BeautyUStudioDB extends DataSource {
                 }
             }
 
-            if (!user?.capabilities) {
+            if (user?.capabilities) {
                 user.capabilities = user.capabilities.map(service => {
                     return ObjectID.createFromHexString(service.toString());
                 });
