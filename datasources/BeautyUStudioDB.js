@@ -545,11 +545,7 @@ module.exports = class BeautyUStudioDB extends DataSource {
         }
     }
 
-    async getPromotions(claim) {
-        if (!claim) {
-            return new AuthenticationError('Not authenticated');
-        }
-
+    async getPromotions() {
         try {
             let promotions = await this.store.collection('promotions').find({}).toArray();
 
