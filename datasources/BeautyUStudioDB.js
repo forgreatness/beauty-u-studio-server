@@ -3,6 +3,7 @@ const { UserInputError, AuthenticationError, ForbiddenError } = require('apollo-
 const { Int32, ObjectID, Double, GridFSBucket } = require('mongodb');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { use } = require('bcrypt/promises');
 
 const JWT_SIGNATURE = process.env.AUTH_SECRET;
 
@@ -418,7 +419,7 @@ module.exports = class BeautyUStudioDB extends DataSource {
     async addUser(claim, userInput) {
         const user = JSON.parse(JSON.stringify(userInput));
 
-        //With Current implementation all new user are active
+        //With Current implementation all new user are inactive
         user.status = "not activated";
 
         // You can only create admin or stylist account if you are an admin
@@ -484,6 +485,62 @@ module.exports = class BeautyUStudioDB extends DataSource {
             });
 
             return token;
+        } catch(err) {
+            return new Error(err);
+        }
+    }
+
+    async updateUser(claim, userID, userInput) {
+        const user = JSON.parse(JSON.stringify(userInput));
+
+        try {
+            if (!claim) {
+                return new AuthenticationError('Action requires authentication');
+            }
+
+            if ((claim?.role ?? "") != 'admin') {
+                if (claim?.id != userID) {
+                    return new ForbiddenError('Action is restricted from user permission');
+                }
+
+                if (user.email || user.role || user.status || user.activationCode || user.accountRecoveryCode || user.capabilities) {
+                    return new ForbiddenError('Action is restricted from user permission');
+                }
+            }
+
+            if (user.password) {
+                user.password = await bcrypt.hash(user.password, 10);
+            }
+
+            if (user.photo) {
+                user.photo = ObjectID.createFromHexString(user.photo);
+
+                userPhoto = await this.downloadUserPhoto(user.photo);
+
+                if (!userPhoto) {
+                    return new UserInputError('Unable to update account because provided photo is not valid');
+                }
+            }
+
+            if (user.capabilities) {
+                user.capabilities = user.capabilities.map(serviceID => ObjectID.createFromHexString(serviceID));
+            }
+
+            const userInput = {
+                $set: user
+            };
+
+            const updateUser = await this.store.collection("users").updateOne({ _id: ObjectID.createFromHexString(userID) }, userInput);   
+
+            if (updateUser?.result.n < 1 ?? true) {
+                throw `No Document with ObjectID ${userID} was found`;
+            } else {
+                if (updateUser?.result.nModified < 1 ?? true) {
+                    throw `Document with ObjectID ${userID} was not updated because input provided did not contain any updated data`;
+                }
+            }
+
+            return this.userReducer(await this.getUser(claim, userID));
         } catch(err) {
             return new Error(err);
         }

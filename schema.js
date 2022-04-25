@@ -78,12 +78,13 @@ const typeDefs = gql`
     
     input UserInput {
         name: String!
-        email: String!
-        password: String!
+        email: String
+        password: String
         phone: String!
-        role: String!
-        activationCode: String!
-        accountRecoveryCode: String!
+        role: String
+        status: String
+        activationCode: String
+        accountRecoveryCode: String
         photo: ID
         about: String
         capabilities: [ID!]
@@ -132,6 +133,7 @@ const typeDefs = gql`
         removeService(serviceID: ID!): Service!
         updateService(serviceID: ID!, serviceInput: ServiceInput): Service!
         addUser(userInput: UserInput!): String!
+        updateUser(userID: ID!, userInput: UserInput!): User!
         addAppointment(appointmentInput: AppointmentInput!): Appointment!
         updateAppointment(appointmentID: ID!, appointmentInput: AppointmentInput!): Appointment!
         removeAppointment(appointmentID: ID!): Appointment!

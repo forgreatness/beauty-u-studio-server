@@ -20,6 +20,7 @@ module.exports = {
         updateService: (_, { serviceID, serviceInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.updateService(claim, serviceID, serviceInput),
         singleUpload: (_, { file }, { dataSources }) => dataSources.beautyUStudioDB.uploadUserPhoto(file),
         addUser: (_, { userInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.addUser(claim, userInput),
+        updateUser: (_, { userID, userInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.updateUser(claim, userID, userInput),
         addAppointment: (_, { appointmentInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.addAppointment(claim, appointmentInput),
         addPromotion: (_, { promotionInput }, { dataSources, claim }) => dataSources.beautyUStudioDB.addPromotion(claim, promotionInput),
         removePromotion: (_, { promotionID }, { dataSources, claim }) => dataSources.beautyUStudioDB.removePromotion(claim, promotionID),
