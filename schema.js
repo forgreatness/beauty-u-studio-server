@@ -77,10 +77,10 @@ const typeDefs = gql`
     }
     
     input UserInput {
-        name: String!
+        name: String
         email: String
         password: String
-        phone: String!
+        phone: String
         role: String
         status: String
         activationCode: String
