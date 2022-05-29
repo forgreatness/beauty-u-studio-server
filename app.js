@@ -67,6 +67,7 @@ connectToDB(() => {
     };
 
     server.applyMiddleware({ app, cors: corsOptions });
+    // server.applyMiddleware({ app });
 
     app.use('', (req, res) => {
         res.send("Welcome to the data interface for BeautyUStudio");

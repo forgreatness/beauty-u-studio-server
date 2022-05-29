@@ -116,7 +116,7 @@ const typeDefs = gql`
         service(serviceId: ID!): Service!
         user(userId: ID!): User!
         users(role: String = "client"): [User!]
-        appointments(filter: AppointmentFilter, future: Boolean = false): [Appointment!]
+        appointments(filter: AppointmentFilter = {}, future: Boolean = false): [Appointment!]
         login(username: String!, password: String!): String!
         promotions: [Promotion!]
         accountRecoveryToken(username: String!): String!
