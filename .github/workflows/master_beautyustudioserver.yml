@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Node.js app to Azure Web App - beautyustudioserver
+name: Build and deploy Node.js app to Azure Web App - beautyustudioapi
 
 on:
   push:
@@ -48,7 +48,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'beautyustudioserver'
+          app-name: 'beautyustudioapi'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D7DBBC0F599C4E9A961E0D9EF42984C1 }}
           package: .
