@@ -21,14 +21,12 @@ jobs:
         with:
           node-version: '14.x'
 
-      - name: npm install, build
+      - name: npm install, build, and test
         run: |
           npm install
           npm run build --if-present
+          npm run test --if-present
 
-      - name: Zip Artifact for Deployment
-        run: zip -r release.zip ./* .env
-      
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
         with:
@@ -48,14 +46,11 @@ jobs:
         with:
           name: node-app
 
-      - name: unzip artifact for deployment
-        run: unzip -o release.zip
-
       - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v2
         id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
         with:
           app-name: 'beautyustudioapi'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_9A46268B1088430382B9340687E82208 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_2DEB18CB5A184C39B1A4384A0FDA36BB }}
           package: .
