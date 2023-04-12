@@ -27,7 +27,7 @@ jobs:
           npm run build --if-present
 
       - name: Zip Artifact for Deployment
-        run: zip -r release.zip ./* .next .env
+        run: zip -r release.zip ./* .env
       
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
