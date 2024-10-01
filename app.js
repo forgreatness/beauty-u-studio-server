@@ -1,4 +1,5 @@
-require('dotenv').config();
+const dotenv = require('dotenv');
+const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const { ApolloServer } = require('apollo-server-express');
@@ -11,8 +12,10 @@ const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
 const BeautyUStudioDB = require('./datasources/BeautyUStudioDB');
 
+const ENV_FILE = process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development';
+dotenv.config({ path: path.resolve(__dirname, ENV_FILE) });
+
 const JWT_SIGNATURE = process.env.AUTH_SECRET;
-const env = process.env.NODE_ENV || 'development';
 
 connectToDB(() => {
     const store = getDBReference();

@@ -18,11 +18,13 @@
     "morgan": "^1.10.0",
     "nodemon": "^2.0.15"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "cross-env": "^7.0.3"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js",
-    "dev": "nodemon ./app.js"
+    "start": "cross-env NODE_ENV=production node app.js",
+    "dev": "cross-env NODE_ENV=development nodemon ./app.js"
   },
   "repository": {
     "type": "git",
