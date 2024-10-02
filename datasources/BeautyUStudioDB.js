@@ -5,12 +5,11 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { use } = require('bcrypt/promises');
 
-const JWT_SIGNATURE = process.env.AUTH_SECRET;
-
 module.exports = class BeautyUStudioDB extends DataSource {
     constructor({ store }) {
         super();
         this.store = store;
+        this.JWT_SIGNATURE = process.env.AUTH_SECRET;
     }
 
     initialize(config) {
@@ -100,7 +99,7 @@ module.exports = class BeautyUStudioDB extends DataSource {
                     role: user.role,
                 };
 
-                const token = jwt.sign(payload, JWT_SIGNATURE, {
+                const token = jwt.sign(payload, this.JWT_SIGNATURE, {
                     expiresIn: "7d",
                     subject: "beautyustudioserver jwt",
                     issuer: "beautyustudioserver",
@@ -141,7 +140,7 @@ module.exports = class BeautyUStudioDB extends DataSource {
                 role: user.role,
             };
 
-            const token = jwt.sign(payload, JWT_SIGNATURE, {
+            const token = jwt.sign(payload, this.JWT_SIGNATURE, {
                 expiresIn: "7d",
                 subject: "beautyustudioserver jwt",
                 issuer: "beautyustudioserver",
@@ -169,7 +168,7 @@ module.exports = class BeautyUStudioDB extends DataSource {
                 accountRecoveryCode: user.accountRecoveryCode
             };
 
-            const accountRecoveryToken = jwt.sign(payload, JWT_SIGNATURE, {
+            const accountRecoveryToken = jwt.sign(payload, this.JWT_SIGNATURE, {
                 expiresIn: "7d",
                 subject: "beautyustudioserver accountRecovery jwt",
                 issuer: "beautyustudioserver",
@@ -184,7 +183,7 @@ module.exports = class BeautyUStudioDB extends DataSource {
 
     async recoverAccount(accountRecoveryToken) {
         try {
-            const decodedToken = await jwt.verify(accountRecoveryToken, JWT_SIGNATURE);
+            const decodedToken = await jwt.verify(accountRecoveryToken, this.JWT_SIGNATURE);
 
             if (!decodedToken || (decodedToken?.exp ?? 0 ) * 1000 < Date.now() || !decodedToken?.username || !decodedToken?.accountRecoveryCode) {
                 throw new AuthenticationError('Invalid account recovery token');
@@ -203,7 +202,7 @@ module.exports = class BeautyUStudioDB extends DataSource {
                 role: user.role,
             };
 
-            const token = jwt.sign(payload, JWT_SIGNATURE, {
+            const token = jwt.sign(payload, this.JWT_SIGNATURE, {
                 expiresIn: "7d",
                 subject: "beautyustudioserver jwt",
                 issuer: "beautyustudioserver",
@@ -477,7 +476,7 @@ module.exports = class BeautyUStudioDB extends DataSource {
                 role: newUser.role
             };
 
-            const token = jwt.sign(payload, JWT_SIGNATURE, {
+            const token = jwt.sign(payload, this.JWT_SIGNATURE, {
                 expiresIn: "7d",
                 subject: "beautyustudioserver jwt",
                 issuer: "beautyustudioserver",
